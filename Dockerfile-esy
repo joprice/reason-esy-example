@@ -1,0 +1,13 @@
+FROM node:10 as base
+RUN apt-get update && apt-get -y install unzip texinfo
+# TODO: build from github archive src, avoid requring npm?
+RUN npm install esy@next
+# TODO: possible to insert esy call here using 'base' package.json, in order to avoid building ocaml + deps every time?
+COPY . /reason-server
+WORKDIR /reason-server
+RUN /node_modules/.bin/esy install
+RUN /node_modules/.bin/esy build:docker
+FROM scratch
+# TODO: 'esy which'?
+COPY --from=base /reason-server/_esy/default/store/*/*/install/default/bin/ReasonServerApp.exe /server
+CMD ["/server"]

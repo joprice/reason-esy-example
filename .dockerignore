@@ -1,0 +1,9 @@
+*
+!library/
+!executable/
+!test/
+!package.json
+!reason-server.install
+!reason-server.opam
+!dune-project
+!dune

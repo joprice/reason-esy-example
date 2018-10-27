@@ -23,7 +23,8 @@
     "test": "esy x TestReasonServer.exe",
     "utop": "dune utop library -- -implicit-bindings",
     "run": "esy x ReasonServerApp.exe",
-    "watch": "watchexec esy"
+    "watch": "watchexec esy",
+    "build:docker": "dune build -j 4 --profile docker"
   },
   "dependencies": {
     "@esy-ocaml/rtop": "^3.3.0",
