@@ -1,0 +1,37 @@
+{
+  "name": "reason_server",
+  "version": "0.0.0",
+  "description": "Reason Server",
+  "esy": {
+    "build": "refmterr dune build -j 4",
+    "release": { "releasedBinaries": [ "ReasonServerApp.exe" ] }
+  },
+  "buildDirs": {
+    "test": {
+      "require": [ "reason-server.lib" ],
+      "main": "ReasonServer",
+      "name": "TestReasonServer.exe"
+    },
+    "library": { "name": "reason-server.lib", "namespace": "ReasonServer" },
+    "executable": {
+      "require": [ "reason-server.lib" ],
+      "main": "ReasonServerApp",
+      "name": "ReasonServerApp.exe"
+    }
+  },
+  "scripts": {
+    "test": "esy x TestReasonServer.exe",
+    "utop": "dune utop library -- -implicit-bindings",
+    "run": "esy x ReasonServerApp.exe",
+    "watch": "watchexec esy"
+  },
+  "dependencies": {
+    "@esy-ocaml/rtop": "^3.3.0",
+    "@opam/async_ssl": "v0.11.0",
+    "@opam/cohttp": "1.1.1",
+    "@opam/cohttp-async": "1.1.1",
+    "@opam/dune": "1.4.0",
+    "refmterr": "*"
+  },
+  "devDependencies": { "@esy-ocaml/merlin": "*", "ocaml": "4.6.6" }
+}

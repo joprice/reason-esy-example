@@ -1,0 +1,5 @@
+(library
+ (name ReasonServer)
+ (public_name reason-server.lib)
+ (libraries core async async_ssl uri yojson cohttp.async)
+ )

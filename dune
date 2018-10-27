@@ -1,0 +1,2 @@
+(ignored_subdirs (node_modules))
+(env (_ (flags (:standard -w @A-42-44-48))))

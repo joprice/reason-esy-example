@@ -1,0 +1,5 @@
+(executable
+   (name TestReasonServer) 
+   (public_name TestReasonServer.exe) 
+   (libraries reason-server.lib)
+  )
