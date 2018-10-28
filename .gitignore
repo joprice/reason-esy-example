@@ -7,3 +7,7 @@ _release
 reason-server.install
 .DS_Store
 *.install
+docker-esy
+docker-build
+_esy/
+node_modules/

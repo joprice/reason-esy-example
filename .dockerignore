@@ -1,4 +1,5 @@
 *
+!docker-build
 !library/
 !executable/
 !test/
