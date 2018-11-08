@@ -1,6 +1,6 @@
 .PHONY: docker docker-builder docker-cross
 
-docker: docker-builder docker-cross
+docker: docker-esy-builder docker-builder docker-cross
 
 # temporarily running with no-cache to test full build time
 docker-opam:
