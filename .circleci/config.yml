@@ -1,7 +1,7 @@
 # Check https://circleci.com/docs/2.0/language-javascript/ for more details
 
 cache_key: &cache_key
-  dependencies-{{ arch }}-{{ checksum "package.json" }}-{{ checksum "esy.lock.json" }}
+  dependencies-v1-{{ arch }}-{{ checksum "package.json" }}-{{ checksum "esy.lock.json" }}
 
 steps: &steps
 - checkout
@@ -25,14 +25,24 @@ steps: &steps
     keys:
     - *cache_key
 
-- run: npm install -g esy@latest
+- run: npm install -g esy@0.3.4
+- run: ls -l $(which esy)
 - run: esy install
 - run: esy build
 
 - save_cache:
     paths:
-      - ~/.esy
+      - ~/.esy/3/i
+      - ~/.esy/source-tarballs
     key: *cache_key
+
+- run:
+    name: Format
+    command: esy format
+
+- run:
+    name: Check dirty workspace
+    command: git diff --no-ext-diff --quiet --exit-code
 
 - run:
     name: Run esy test
