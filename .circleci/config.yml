@@ -32,8 +32,9 @@ steps: &steps
 
 - save_cache:
     paths:
-      - ~/.esy/3/i
-      - ~/.esy/source-tarballs
+      - ~/.esy
+      # - ~/.esy/3/i
+      # - ~/.esy/source-tarballs
     key: *cache_key
 
 - run:
