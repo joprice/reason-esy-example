@@ -10,4 +10,5 @@ reason-server.install
 docker-esy
 docker-build
 _esy/
-node_modules/
+# this is intentionally not a directory, since esy uses a symlink for node_modules
+node_modules

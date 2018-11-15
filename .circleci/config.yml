@@ -37,28 +37,6 @@ steps: &steps
 - run:
     name: Run esy test
     command: esy test
-- run:
-    name: Run the main binary
-    command: esy x ReasonServerApp.exe
-- run:
-    name: Show all libraries including this package lib
-    command: esy ls-libs
-- run:
-    name: Test Creation of Prebuilt Binary Releases
-    command: esy release
-- run:
-    name: Preparing release tarball
-    command: mv "_release/$(cd _release && npm pack 2>/dev/null)" _release/reason-server.tgz
-- run:
-    name: Installing release
-    command: npm install -g ./_release/reason-server.tgz
-- run:
-    name: Testing installed release
-    command: "ReasonServerApp.exe"
-
-- store_artifacts:
-    path: _release/reason-server.tgz
-    destination: reason-server.tgz
 
 environment: &environment
 - TERM: dumb
@@ -89,5 +67,5 @@ workflows:
   build-deploy:
     jobs:
     - linux
-    - macos
+    # - macos
 
