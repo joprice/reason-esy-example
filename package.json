@@ -23,7 +23,8 @@
     "test": "esy x TestReasonServer.exe",
     "utop": "dune utop library -- -implicit-bindings",
     "run": "esy x ReasonServerApp.exe",
-    "watch": "watchexec esy"
+    "watch": "watchexec esy",
+    "format": "bash -c 'refmt --in-place library/*.re executable/*.re'"
   },
   "dependencies": {
     "@esy-ocaml/reason": "^3.3.7",
