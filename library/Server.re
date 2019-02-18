@@ -2,7 +2,17 @@ open Core;
 open Async;
 open Cohttp_async;
 
-/* Based off of https://github.com/mirage/ocaml-cohttp/blob/master/examples/async/hello_world.ml */
+/* Based off of https://github.com/mirage/ocaml-cohttp/blob/master/examples/async/hello_world.ml
+
+   Data / inspiration taken from
+
+   https://github.com/grantwinney/15-apis-in-15-days/blob/0ce1087e64eca5ae5090839fcaac04921f7a32cb/Day%2013%20-%20US%20Census%20Bureau%20API.md
+   https://api.census.gov/data/2013/language?get=NAME,EST,LANLABEL&for=county:020&in=state:02&LAN=625
+   https://library.columbia.edu/locations/dssc/data/nycounty_fips.html
+   https://www2.census.gov/geo/docs/reference/codes/files/st36_ny_cou.txt
+   https://www.census.gov/geo/reference/codes/cou.html
+   https://www.census.gov/hhes/socdemo/language/about/02_Primary_list.pdf
+      */
 
 let toStrings = values =>
   List.filter_map(
