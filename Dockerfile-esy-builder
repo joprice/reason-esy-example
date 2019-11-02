@@ -1,35 +1,78 @@
-# TODO: switch to smaller image?
-FROM ocaml/opam2:alpine-3.8-ocaml-4.07 as base
-
-RUN sudo apk update
-# perl-utils needed for 'shasum'
-RUN sudo apk add m4 perl perl-utils
-RUN sudo apk add libressl-dev libffi-dev
-RUN sh -c "cd ~/opam-repository && git pull -q"
-RUN opam update
-# esy deps
-RUN opam install dune reason lwt_ppx ppx_let ppx_deriving_yojson cmdliner bos logs \
-  re angstrom opam-format ppx_inline_test ppx_sexp_conv opam-state ppx_expect cudf dose3
-
-ENV ESY_VERSION=v0.3.4
-RUN git clone -b $ESY_VERSION https://github.com/esy/esy.git
-RUN sh -c 'eval `opam config env` cd /home/opam/opam-repository/esy && dune build -j 4'
-
-ENV ESY_SOLVE_CUDF_VERSION=v0.1.8
-
-RUN git clone -b $ESY_SOLVE_CUDF_VERSION https://github.com/andreypopp/esy-solve-cudf.git /home/opam/opam-repository/esy-solve-cudf
-# esy-solve-cudf deps
-RUN opam install mccs
-RUN sh -c 'eval `opam config env` cd /home/opam/opam-repository/esy-solve-cudf && dune build -j 4'
-
-RUN git clone https://github.com/esy-ocaml/FastReplaceString.git /home/opam/opam-repository/fastreplacestring
-RUN cd /home/opam/opam-repository/fastreplacestring && make
-RUN cp /home/opam/opam-repository/fastreplacestring/bin/fastreplacestring /home/opam/opam-repository/esy/bin/fastreplacestring
-
-RUN mkdir -p /home/opam/opam-repository/esy/_build/default/node_modules/esy-solve-cudf/
-RUN cp /home/opam/opam-repository/esy-solve-cudf/_build/default/bin/esySolveCudfCommand.exe /home/opam/opam-repository/esy/_build/default/node_modules/esy-solve-cudf/esySolveCudfCommand.exe
-
-RUN sudo ln -s /home/opam/opam-repository/esy/_build/default/esy/bin/esyCommand.exe /bin/esy
-RUN sudo mkdir /data && sudo chown -R opam:nogroup /data
+# -*- mode: dockerfile; -*-
+###############################################################################
+# TO RUN: 1ST REGISTER THE MULTIARCH/QEMU-USER-STATIC IMAGE
+#   docker run --rm --privileged multiarch/qemu-user-static:register \
+#      --reset --credential yes
+###############################################################################
+# THEN: PASS AN ARGUMENT TO 'docker build' TO DETERMINE THE TARGET ARCHITECTURE
+#   docker build --build-arg IMAGE=multiarch/debian-debootstrap:armhf-stretch
+#   docker build --build-arg IMAGE=multiarch/debian-debootstrap:arm64-stretch
+###############################################################################
+# BASE IMAGE DEFAULTS TO 64BIT INTEL/AMD DEBIAN STRETCH
+ARG IMAGE=multiarch/debian-debootstrap:amd64-stretch
+FROM ${IMAGE}
+###############################################################################
+# UPGRADE AND ADD A NON-ROOT USER (OPAM LATER COMPLAINS IF YOU DO NOT)
+RUN perl -p -i -e 's/main/main restricted universe/g' /etc/apt/sources.list
+RUN apt-get update
+RUN apt-get upgrade -y
+RUN apt-get dist-upgrade -y
+RUN apt-get install -y apt-transport-https curl gnupg sudo
+RUN update-ca-certificates
+RUN useradd -m -s /bin/bash -G sudo opam
+RUN echo '%sudo ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/nopasswd
+###############################################################################
+# BECOME 'opam' INSTEAD OF 'root'
+WORKDIR /home/opam
+CMD /bin/bash -l
+USER opam
+###############################################################################
+# OPAM/OCAML
+ENV OPAMYES 1
+RUN sudo apt-get install -y bzip2 g++ git make m4 openssl pkg-config \
+    rsync unzip xz-utils
+RUN curl -sL https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh \
+  | sed 's/read BINDIR/BINDIR=\/usr\/local\/bin/g' \
+  | sh
+RUN opam init --compiler=4.07.1 --auto-setup --disable-sandboxing
+###############################################################################
+# ESY
+ARG ESY=master
+RUN git clone -b ${ESY} https://github.com/esy/esy.git /home/opam/esy
+WORKDIR /home/opam/esy
+RUN sudo apt-get install -y libssl-dev libffi-dev
+RUN eval $(opam env) && opam pin cmdliner --no-action \
+    https://github.com/esy-ocaml/cmdliner.git#8500634a
+RUN eval $(opam env) && opam pin angstrom --no-action \
+    https://github.com/esy-ocaml/angstrom.git#5a06a0
+RUN eval $(opam env) && opam install angstrom bos cmdliner cudf dose3 \
+    dune logs lwt_ppx opam-format opam-state ppx_deriving_yojson \
+    ppx_expect ppx_inline_test ppx_let ppx_sexp_conv re reason
+RUN eval $(opam env) && dune build -j $(nproc --all)
+###############################################################################
+# ESY SOLVE CUDF
+ARG ESY_SOLVE_CUDF=master
+RUN git clone -b ${ESY_SOLVE_CUDF} --recurse-submodules \
+    https://github.com/andreypopp/esy-solve-cudf.git \
+    /home/opam/esy-solve-cudf
+WORKDIR /home/opam/esy-solve-cudf
+RUN eval $(opam env) && opam pin mccs ./mccs ;# git submodule
+RUN eval $(opam env) && dune build -j $(nproc --all)
+ENV ESY__SOLVE_CUDF_COMMAND \
+    /home/opam/esy-solve-cudf/_build/default/bin/esySolveCudfCommand.exe
+###############################################################################
+# NODE
+RUN wget -qO- https://deb.nodesource.com/setup_10.x|sudo bash -
+RUN sudo apt-get install -y nodejs
+###############################################################################
+# DOCKER CONFIG
+RUN sudo mkdir /data
+RUN sudo chown -R opam:nogroup /data
 WORKDIR /data
-ENTRYPOINT ["esy"]
+ENTRYPOINT /home/opam/esy/_build/default/bin/esy.exe
+###############################################################################
+# FREE UP GBs OF SPACE! (ONLY USEFUL WITH `docker build --squash`)
+RUN sudo apt-get autoremove -y
+RUN sudo apt-get clean
+RUN sudo rm -rf /tmp/* /home/opam/.opam/ /home/opam/*/_build/default/.ppx
+###############################################################################
