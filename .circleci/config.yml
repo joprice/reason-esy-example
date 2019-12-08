@@ -25,8 +25,7 @@ steps: &steps
     keys:
     - *cache_key
 
-- run: npm install -g esy@0.3.4
-- run: ls -l $(which esy)
+- run: npm install -g esy@0.5.8
 - run: esy install
 - run: esy build
 
