@@ -67,7 +67,7 @@ jobs:
 
   linux:
     docker:
-    - image: circleci/node:8-stretch-browsers
+    - image: circleci/node:12.13.1-stretch-browsers
 
     working_directory: *working_directory
     environment: *environment
@@ -79,4 +79,3 @@ workflows:
     jobs:
     - linux
     # - macos
-
