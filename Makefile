@@ -29,9 +29,8 @@ docker-builder:
 		--rm -it esy-builder \
 		-c 'set +eux; esy @docker install && esy @docker build && cp `esy @docker x which ReasonServerApp.exe` /data/output/server'
 
-docker-cross: 
+docker-cross:
 	docker build -t reason-server-cross -f Dockerfile-cross .
 
 docker-run:
 	docker run --rm -it -p 8080:8080 reason-server-cross:latest
-
