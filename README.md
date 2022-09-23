@@ -22,4 +22,3 @@ esy run
 # Runs the "test" command in `package.json`.
 esy test
 ```
-
